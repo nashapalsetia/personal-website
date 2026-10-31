@@ -501,6 +501,7 @@ figure figcaption {
 }
 .sk-chip:hover { border-color: var(--gold); }
 .sk-chip[aria-pressed="true"] { color: var(--ink); border-color: var(--ink); box-shadow: 0 0 0 1px var(--ink); }
+.sk-size { width: 28px; padding: 0; justify-content: center; }
 
 /* Dot drawn at the real brush size, in the current pen color */
 .sk-dot {
