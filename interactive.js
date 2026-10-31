@@ -134,17 +134,12 @@
 
     root.innerHTML = `
       <p class="play-title">Take a breather</p>
-      <p class="play-hint">Follow the circle or the dot for a minute. Slow breathing like this is a simple way to calm your heart rate before a game, a performance, or an exam.</p>
+      <p class="play-hint">Follow the circle for a minute. Slow breathing like this is a simple way to calm your heart rate before a game, a performance, or an exam.</p>
       <div class="br-stage">
-        <div class="br-orb">
-          <div class="br-circle"></div>
-          <div class="br-text" aria-live="polite">
-            <span class="br-label">Ready</span>
-            <span class="br-num"></span>
-          </div>
-        </div>
-        <div class="br-box" aria-hidden="true">
-          <div class="br-dot"></div>
+        <div class="br-circle"></div>
+        <div class="br-text" aria-live="polite">
+          <span class="br-label">Ready</span>
+          <span class="br-num"></span>
         </div>
       </div>
       <div class="play-bar">
@@ -158,20 +153,12 @@
       </div>`;
 
     const circle = root.querySelector('.br-circle');
-    const dot = root.querySelector('.br-dot');
     const label = root.querySelector('.br-label');
     const num = root.querySelector('.br-num');
     const select = root.querySelector('[data-pattern]');
     const toggle = root.querySelector('[data-toggle]');
     const cyclesEl = root.querySelector('[data-cycles]');
     let timer = null, cycles = 0;
-    let pos = { x: 0, y: 0 };   // dot position: x 0 = left, 1 = right; y 0 = bottom, 1 = top
-
-    function moveDot(secs) {
-      dot.style.transitionDuration = secs + 's';
-      dot.style.setProperty('--x', pos.x);
-      dot.style.setProperty('--y', pos.y);
-    }
 
     function runStep(steps, i) {
       const [text, secs, kind] = steps[i];
@@ -182,11 +169,6 @@
         circle.style.transitionDuration = secs + 's';
         circle.classList.toggle('is-full', kind === 'in');
       }
-      // The dot: up for in, down for out, across for a hold
-      if (kind === 'in') pos.y = 1;
-      else if (kind === 'out') pos.y = 0;
-      else pos.x = 1 - pos.x;
-      moveDot(secs);
       timer = setInterval(() => {
         if (--left > 0) return void (num.textContent = left);
         clearInterval(timer);
@@ -201,8 +183,6 @@
       timer = null;
       circle.style.transitionDuration = '0.8s';
       circle.classList.remove('is-full');
-      pos = { x: 0, y: 0 };
-      moveDot(0.8);
       label.textContent = 'Ready';
       num.textContent = '';
       toggle.textContent = 'Start';
