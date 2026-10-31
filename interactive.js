@@ -218,7 +218,7 @@
         </div>
         <div class="sk-group">
           <span class="sk-label">Size</span>
-          ${sizes.map(([n, s], i) => `<button type="button" class="sk-chip" aria-pressed="${i === 1}" data-size="${s}"><span class="sk-dot" style="--s:${Math.max(3, Math.round(s * 0.65))}px"></span>${n}</button>`).join('')}
+          ${sizes.map(([n, s], i) => `<button type="button" class="sk-chip sk-size" title="${n}" aria-label="${n} brush" aria-pressed="${i === 1}" data-size="${s}"><span class="sk-dot" style="--s:${Math.max(3, Math.round(s * 0.65))}px"></span></button>`).join('')}
         </div>
         <div class="sk-group sk-actions">
           <button type="button" class="btn btn-quiet" data-undo>Undo</button>
