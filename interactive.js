@@ -7,6 +7,123 @@
 (function () {
   'use strict';
 
+  const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+
+  /* ---------- Soccer: penalty kick ---------- */
+  function penalty(root) {
+    const zoneNames = [
+      ['Top left', 'Top centre', 'Top right'],
+      ['Bottom left', 'Bottom centre', 'Bottom right'],
+    ];
+
+    root.innerHTML = `
+      <p class="play-title">Take a penalty</p>
+      <p class="play-hint">Pick a spot in the goal. The corners are harder to save, but aim too high and you might miss the frame.</p>
+      <div class="pk-field">
+        <div class="pk-goal">
+          <svg class="pk-keeper" viewBox="0 0 60 100" aria-hidden="true">
+            <g stroke="#2b2b2b" stroke-width="7" stroke-linecap="round">
+              <line x1="20" y1="30" x2="5" y2="8" />
+              <line x1="40" y1="30" x2="55" y2="8" />
+              <line x1="25" y1="60" x2="21" y2="95" />
+              <line x1="35" y1="60" x2="39" y2="95" />
+            </g>
+            <circle cx="5" cy="8" r="5" fill="#b8995a" />
+            <circle cx="55" cy="8" r="5" fill="#b8995a" />
+            <rect x="17" y="22" width="26" height="42" rx="7" fill="#6b6048" />
+            <circle cx="30" cy="12" r="9" fill="#2b2b2b" />
+          </svg>
+          <div class="pk-zones"></div>
+        </div>
+        <div class="pk-ball" aria-hidden="true"></div>
+        <p class="pk-msg" aria-live="polite"></p>
+      </div>
+      <div class="play-bar">
+        <span class="play-score">Goals <b data-goals>0</b> / Shots <b data-shots>0</b></span>
+        <button type="button" class="btn btn-quiet" data-reset>Reset</button>
+      </div>`;
+
+    const zones = root.querySelector('.pk-zones');
+    const keeper = root.querySelector('.pk-keeper');
+    const ball = root.querySelector('.pk-ball');
+    const msg = root.querySelector('.pk-msg');
+    const goalsEl = root.querySelector('[data-goals]');
+    const shotsEl = root.querySelector('[data-shots]');
+    let goals = 0, shots = 0, busy = false;
+
+    zoneNames.forEach((row, r) => row.forEach((name, c) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'pk-zone';
+      b.setAttribute('aria-label', 'Shoot ' + name.toLowerCase());
+      b.addEventListener('click', () => shoot(r, c, name));
+      zones.appendChild(b);
+    }));
+
+    function placeKeeper(r, c) {
+      // Standing in the middle, or diving toward (r, c)
+      const left = [20, 50, 80][c];
+      const bottom = r === 0 ? 20 : 0;
+      const tilt = c === 1 ? 0 : (c === 0 ? -1 : 1) * (r === 0 ? 65 : 85);
+      keeper.style.left = left + '%';
+      keeper.style.bottom = bottom + '%';
+      keeper.style.transform = `translateX(-50%) rotate(${tilt}deg)`;
+    }
+
+    function resetPositions() {
+      keeper.style.left = keeper.style.bottom = keeper.style.transform = '';
+      ball.style.left = ball.style.top = ball.style.transform = '';
+      msg.textContent = '';
+      msg.className = 'pk-msg';
+    }
+
+    async function shoot(r, c, name) {
+      if (busy) return;
+      busy = true;
+      root.classList.add('is-busy');
+
+      const kr = Math.random() < 0.5 ? 0 : 1;
+      const kc = Math.floor(Math.random() * 3);
+      const missed = r === 0 && c !== 1 && Math.random() < 0.15;
+      // The keeper covers the middle whether they jump or stay down
+      const saved = !missed && kc === c && (kr === r || c === 1);
+
+      // Ball travels from the spot into the goal (field coordinates, %)
+      const x = 10 + 80 * [1 / 6, 3 / 6, 5 / 6][c];
+      const y = missed ? 2 : 8 + 55 * [0.28, 0.72][r];
+      ball.style.left = (missed ? x + (c === 0 ? -6 : 6) : x) + '%';
+      ball.style.top = y + '%';
+      ball.style.transform = 'translate(-50%, -50%) scale(0.7)';
+      placeKeeper(kr, kc);
+
+      await wait(500);
+      shots++;
+      if (saved) {
+        msg.textContent = 'Saved!';
+        msg.classList.add('is-miss');
+      } else if (missed) {
+        msg.textContent = Math.random() < 0.5 ? 'Off the post!' : 'Over the bar!';
+        msg.classList.add('is-miss');
+      } else {
+        goals++;
+        msg.textContent = 'GOAL! ' + name + '.';
+        msg.classList.add('is-goal');
+      }
+      goalsEl.textContent = goals;
+      shotsEl.textContent = shots;
+
+      await wait(1400);
+      resetPositions();
+      busy = false;
+      root.classList.remove('is-busy');
+    }
+
+    root.querySelector('[data-reset]').addEventListener('click', () => {
+      goals = shots = 0;
+      goalsEl.textContent = shotsEl.textContent = '0';
+    });
+  }
+
   /* ---------- Health: breathing pacer ---------- */
   function breathe(root) {
     const patterns = {
@@ -221,7 +338,7 @@
   }
 
   /* ---------- Mount ---------- */
-  const widgets = { breathe, sketch };
+  const widgets = { penalty, breathe, sketch };
 
   document.querySelectorAll('[data-play]').forEach((root) => {
     const init = widgets[root.dataset.play];
