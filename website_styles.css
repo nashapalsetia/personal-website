@@ -358,6 +358,80 @@ figure figcaption {
 .play button:focus-visible,
 .play select:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 
+/* Penalty kick */
+.pk-field {
+  position: relative;
+  aspect-ratio: 16 / 10;
+  border-radius: 6px;
+  overflow: hidden;
+  background:
+    linear-gradient(transparent 63%, rgba(255,255,255,.7) 63%, rgba(255,255,255,.7) calc(63% + 2px), transparent calc(63% + 2px)),
+    repeating-linear-gradient(90deg, #dfe7d6 0 12.5%, #d6e0cc 12.5% 25%);
+}
+
+.pk-goal {
+  position: absolute;
+  left: 10%; right: 10%; top: 8%; height: 55%;
+  border: 5px solid #fff;
+  border-bottom: none;
+  background:
+    repeating-linear-gradient(0deg, rgba(255,255,255,.55) 0 1px, transparent 1px 14px),
+    repeating-linear-gradient(90deg, rgba(255,255,255,.55) 0 1px, transparent 1px 14px),
+    rgba(255,255,255,.18);
+}
+
+.pk-keeper {
+  position: absolute;
+  left: 50%; bottom: 0;
+  width: 15%; height: 82%;
+  transform: translateX(-50%);
+  transform-origin: 50% 60%;
+  transition: left .45s ease-out, bottom .45s ease-out, transform .45s ease-out;
+  pointer-events: none;
+}
+
+.pk-zones {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template: 1fr 1fr / repeat(3, 1fr);
+}
+
+.pk-zone {
+  border: none;
+  background: transparent;
+  cursor: crosshair;
+  transition: background .15s;
+}
+.pk-zone:hover, .pk-zone:focus-visible { background: rgba(184, 153, 90, .28); }
+.play.is-busy .pk-zone { pointer-events: none; background: transparent; }
+
+.pk-ball {
+  position: absolute;
+  left: 50%; top: 86%;
+  width: 5.5%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff 0 35%, #e8e4da 70%, #c9c3b5);
+  border: 1px solid #9c968a;
+  transform: translate(-50%, -50%);
+  transition: left .5s cubic-bezier(.2,.7,.3,1), top .5s cubic-bezier(.2,.7,.3,1), transform .5s;
+  pointer-events: none;
+}
+
+.pk-msg {
+  position: absolute;
+  left: 0; right: 0; bottom: 4%;
+  margin: 0;
+  text-align: center;
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.1rem, 3.5vw, 1.6rem);
+  font-weight: 600;
+  pointer-events: none;
+}
+.pk-msg.is-goal { color: var(--gold-deep); }
+.pk-msg.is-miss { color: var(--ink-soft); }
+
 /* Breathing pacer */
 .br-stage {
   display: flex;
@@ -483,6 +557,10 @@ figure figcaption {
 @media (max-width: 600px) {
   .play { padding: 18px 14px; }
   .sk-actions { margin-left: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pk-keeper, .pk-ball { transition-duration: .15s; }
 }
 
 /* ---------- Footer ---------- */
