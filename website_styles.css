@@ -434,16 +434,8 @@ figure figcaption {
 
 /* Breathing pacer */
 .br-stage {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: center;
-  gap: 24px 56px;
-  min-height: 260px;
-}
-.br-orb {
   position: relative;
-  width: 220px; height: 220px;
+  height: 260px;
   display: grid;
   place-items: center;
 }
@@ -460,32 +452,6 @@ figure figcaption {
 .br-text { position: relative; text-align: center; }
 .br-label { display: block; font-family: 'Playfair Display', serif; font-size: 1.25rem; color: var(--ink); }
 .br-num { display: block; font-size: 0.9rem; color: var(--muted); min-height: 1.4em; }
-
-/* The box: a square track with a dot that moves up (in), across (hold), down (out) */
-.br-box { position: relative; width: 170px; height: 170px; }
-.br-box::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border: 3px solid var(--line-soft);
-  border-radius: 4px;
-}
-
-.br-dot {
-  --x: 0;   /* 0 = left edge, 1 = right edge  (set from JS) */
-  --y: 0;   /* 0 = bottom edge, 1 = top edge  (set from JS) */
-  position: absolute;
-  left: calc(var(--x) * 100%);
-  bottom: calc(var(--y) * 100%);
-  width: 16px; height: 16px;
-  border-radius: 50%;
-  background: var(--gold);
-  box-shadow: 0 0 0 4px rgba(184, 153, 90, .25);
-  transform: translate(-50%, 50%);   /* centre the dot on the corner it's heading to */
-  transition-property: left, bottom;
-  transition-duration: 0.8s;
-  transition-timing-function: linear;
-}
 
 /* Sketchpad */
 .sk-tools {
