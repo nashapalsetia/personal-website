@@ -1,250 +1,11 @@
 /* ============================================================
-   Interactive pieces for the Interests page.
+   Interactive pieces used across the site.
    Each widget mounts into an element with a matching
-   data-play attribute, e.g. <div data-play="penalty"></div>
+   data-play attribute, e.g. <div data-play="sketch"></div>
    ============================================================ */
 
 (function () {
   'use strict';
-
-  const wait = (ms) => new Promise((r) => setTimeout(r, ms));
-
-  /* ---------- Soccer: penalty kick ---------- */
-  function penalty(root) {
-    const zoneNames = [
-      ['Top left', 'Top centre', 'Top right'],
-      ['Bottom left', 'Bottom centre', 'Bottom right'],
-    ];
-
-    root.innerHTML = `
-      <p class="play-title">Take a penalty</p>
-      <p class="play-hint">Pick a spot in the goal. The corners are harder to save, but aim too high and you might miss the frame.</p>
-      <div class="pk-field">
-        <div class="pk-goal">
-          <svg class="pk-keeper" viewBox="0 0 60 100" aria-hidden="true">
-            <g stroke="#2b2b2b" stroke-width="7" stroke-linecap="round">
-              <line x1="20" y1="30" x2="5" y2="8" />
-              <line x1="40" y1="30" x2="55" y2="8" />
-              <line x1="25" y1="60" x2="21" y2="95" />
-              <line x1="35" y1="60" x2="39" y2="95" />
-            </g>
-            <circle cx="5" cy="8" r="5" fill="#b8995a" />
-            <circle cx="55" cy="8" r="5" fill="#b8995a" />
-            <rect x="17" y="22" width="26" height="42" rx="7" fill="#6b6048" />
-            <circle cx="30" cy="12" r="9" fill="#2b2b2b" />
-          </svg>
-          <div class="pk-zones"></div>
-        </div>
-        <div class="pk-ball" aria-hidden="true"></div>
-        <p class="pk-msg" aria-live="polite"></p>
-      </div>
-      <div class="play-bar">
-        <span class="play-score">Goals <b data-goals>0</b> / Shots <b data-shots>0</b></span>
-        <button type="button" class="btn btn-quiet" data-reset>Reset</button>
-      </div>`;
-
-    const zones = root.querySelector('.pk-zones');
-    const keeper = root.querySelector('.pk-keeper');
-    const ball = root.querySelector('.pk-ball');
-    const msg = root.querySelector('.pk-msg');
-    const goalsEl = root.querySelector('[data-goals]');
-    const shotsEl = root.querySelector('[data-shots]');
-    let goals = 0, shots = 0, busy = false;
-
-    zoneNames.forEach((row, r) => row.forEach((name, c) => {
-      const b = document.createElement('button');
-      b.type = 'button';
-      b.className = 'pk-zone';
-      b.setAttribute('aria-label', 'Shoot ' + name.toLowerCase());
-      b.addEventListener('click', () => shoot(r, c, name));
-      zones.appendChild(b);
-    }));
-
-    function placeKeeper(r, c) {
-      // Standing in the middle, or diving toward (r, c)
-      const left = [20, 50, 80][c];
-      const bottom = r === 0 ? 20 : 0;
-      const tilt = c === 1 ? 0 : (c === 0 ? -1 : 1) * (r === 0 ? 65 : 85);
-      keeper.style.left = left + '%';
-      keeper.style.bottom = bottom + '%';
-      keeper.style.transform = `translateX(-50%) rotate(${tilt}deg)`;
-    }
-
-    function resetPositions() {
-      keeper.style.left = keeper.style.bottom = keeper.style.transform = '';
-      ball.style.left = ball.style.top = ball.style.transform = '';
-      msg.textContent = '';
-      msg.className = 'pk-msg';
-    }
-
-    async function shoot(r, c, name) {
-      if (busy) return;
-      busy = true;
-      root.classList.add('is-busy');
-
-      const kr = Math.random() < 0.5 ? 0 : 1;
-      const kc = Math.floor(Math.random() * 3);
-      const missed = r === 0 && c !== 1 && Math.random() < 0.15;
-      // The keeper covers the middle whether they jump or stay down
-      const saved = !missed && kc === c && (kr === r || c === 1);
-
-      // Ball travels from the spot into the goal (field coordinates, %)
-      const x = 10 + 80 * [1 / 6, 3 / 6, 5 / 6][c];
-      const y = missed ? 2 : 8 + 55 * [0.28, 0.72][r];
-      ball.style.left = (missed ? x + (c === 0 ? -6 : 6) : x) + '%';
-      ball.style.top = y + '%';
-      ball.style.transform = 'translate(-50%, -50%) scale(0.7)';
-      placeKeeper(kr, kc);
-
-      await wait(500);
-      shots++;
-      if (saved) {
-        msg.textContent = 'Saved!';
-        msg.classList.add('is-miss');
-      } else if (missed) {
-        msg.textContent = Math.random() < 0.5 ? 'Off the post!' : 'Over the bar!';
-        msg.classList.add('is-miss');
-      } else {
-        goals++;
-        msg.textContent = 'GOAL! ' + name + '.';
-        msg.classList.add('is-goal');
-      }
-      goalsEl.textContent = goals;
-      shotsEl.textContent = shots;
-
-      await wait(1400);
-      resetPositions();
-      busy = false;
-      root.classList.remove('is-busy');
-    }
-
-    root.querySelector('[data-reset]').addEventListener('click', () => {
-      goals = shots = 0;
-      goalsEl.textContent = shotsEl.textContent = '0';
-    });
-  }
-
-  /* ---------- Dance: hit the 8-count ---------- */
-  function eightCount(root) {
-    root.innerHTML = `
-      <p class="play-title">Hit the 8-count</p>
-      <p class="play-hint">Just like rehearsal: you'll get a "5, 6, 7, 8" count-in, then tap on every beat from 1 to 8. Tap the pad or press the space bar.</p>
-      <div class="dc-controls">
-        <label class="dc-tempo">Tempo
-          <select data-tempo>
-            <option value="84">Slow · 84 BPM</option>
-            <option value="104" selected>Medium · 104 BPM</option>
-            <option value="128">Fast · 128 BPM</option>
-          </select>
-        </label>
-        <button type="button" class="btn" data-start>Start</button>
-      </div>
-      <div class="dc-counts" aria-hidden="true">
-        ${[1, 2, 3, 4, 5, 6, 7, 8].map((n) => `<span>${n}</span>`).join('')}
-      </div>
-      <button type="button" class="dc-pad" disabled>Tap</button>
-      <p class="dc-feedback" aria-live="polite"></p>`;
-
-    const cells = [...root.querySelectorAll('.dc-counts span')];
-    const pad = root.querySelector('.dc-pad');
-    const startBtn = root.querySelector('[data-start]');
-    const tempo = root.querySelector('[data-tempo]');
-    const feedback = root.querySelector('.dc-feedback');
-    let ctx = null, running = false, targets = [], results = [], spb = 0;
-
-    function click(time, freq) {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.frequency.value = freq;
-      gain.gain.setValueAtTime(0.0001, time);
-      gain.gain.exponentialRampToValueAtTime(0.5, time + 0.005);
-      gain.gain.exponentialRampToValueAtTime(0.0001, time + 0.08);
-      osc.connect(gain).connect(ctx.destination);
-      osc.start(time);
-      osc.stop(time + 0.1);
-    }
-
-    function flash(cell, cls) {
-      cell.classList.add(cls);
-      setTimeout(() => cell.classList.remove(cls), 160);
-    }
-
-    function start() {
-      ctx = ctx || new (window.AudioContext || window.webkitAudioContext)();
-      ctx.resume();
-      running = true;
-      startBtn.disabled = tempo.disabled = true;
-      pad.disabled = false;
-      pad.focus();
-      cells.forEach((c) => (c.className = ''));
-      feedback.textContent = '5, 6, 7, 8…';
-
-      spb = 60 / Number(tempo.value);
-      const latency = ctx.outputLatency || ctx.baseLatency || 0;
-      const t0 = ctx.currentTime + 0.4;
-      targets = [];
-      results = new Array(8).fill(null);
-
-      // Beats 0–3 are the count-in (counts 5–8), beats 4–11 are scored (1–8)
-      for (let i = 0; i < 12; i++) {
-        const time = t0 + i * spb;
-        const scored = i >= 4;
-        const cell = cells[scored ? i - 4 : i + 4];
-        click(time, !scored ? 660 : i === 4 ? 1320 : 880);
-        setTimeout(() => flash(cell, scored ? 'on' : 'lead'), (time - ctx.currentTime) * 1000);
-        if (scored) targets.push(time + latency);
-      }
-
-      const end = targets[7] + spb * 0.6;
-      setTimeout(finish, (end - ctx.currentTime) * 1000);
-    }
-
-    function tap() {
-      if (!running) return;
-      const now = ctx.currentTime;
-      let j = 0;
-      targets.forEach((t, i) => { if (Math.abs(now - t) < Math.abs(now - targets[j])) j = i; });
-      const delta = now - targets[j];
-
-      if (Math.abs(delta) > spb / 2) {
-        feedback.textContent = now < targets[0] ? 'Wait for 1!' : 'Off the beat';
-        return;
-      }
-      if (results[j]) return;
-
-      const off = Math.abs(delta);
-      const grade = off < 0.06 ? 'perfect' : off < 0.13 ? 'good' : 'off';
-      results[j] = grade;
-      cells[j].classList.add(grade);
-      const side = delta < 0 ? 'early' : 'late';
-      feedback.textContent =
-        grade === 'perfect' ? 'Perfect!' :
-        grade === 'good' ? `Good, a touch ${side}` :
-        `A bit ${side}`;
-    }
-
-    function finish() {
-      running = false;
-      pad.disabled = true;
-      startBtn.disabled = tempo.disabled = false;
-      startBtn.textContent = 'Again';
-
-      const points = { perfect: 100, good: 70, off: 30 };
-      results.forEach((r, i) => { if (!r) cells[i].classList.add('missed'); });
-      const onBeat = results.filter((r) => r === 'perfect' || r === 'good').length;
-      const score = Math.round(results.reduce((s, r) => s + (points[r] || 0), 0) / 8);
-      const verdict = score >= 90 ? 'Stage-ready.' : score >= 70 ? 'Nice, almost there.' : 'Run it again from the top!';
-      feedback.textContent = `${onBeat}/8 on the beat · ${score}% accuracy. ${verdict}`;
-    }
-
-    startBtn.addEventListener('click', start);
-    pad.addEventListener('pointerdown', (e) => { e.preventDefault(); tap(); });
-    document.addEventListener('keydown', (e) => {
-      if (!running || e.repeat || (e.key !== ' ' && e.key !== 'Enter')) return;
-      e.preventDefault();
-      tap();
-    });
-  }
 
   /* ---------- Health: breathing pacer ---------- */
   function breathe(root) {
@@ -256,12 +17,17 @@
 
     root.innerHTML = `
       <p class="play-title">Take a breather</p>
-      <p class="play-hint">Follow the circle for a minute. Slow breathing like this is a simple way to calm your heart rate before a game, a performance, or an exam.</p>
+      <p class="play-hint">Follow the circle or the dot for a minute. Slow breathing like this is a simple way to calm your heart rate before a game, a performance, or an exam.</p>
       <div class="br-stage">
-        <div class="br-circle"></div>
-        <div class="br-text" aria-live="polite">
-          <span class="br-label">Ready</span>
-          <span class="br-num"></span>
+        <div class="br-orb">
+          <div class="br-circle"></div>
+          <div class="br-text" aria-live="polite">
+            <span class="br-label">Ready</span>
+            <span class="br-num"></span>
+          </div>
+        </div>
+        <div class="br-box" aria-hidden="true">
+          <div class="br-dot"></div>
         </div>
       </div>
       <div class="play-bar">
@@ -275,12 +41,20 @@
       </div>`;
 
     const circle = root.querySelector('.br-circle');
+    const dot = root.querySelector('.br-dot');
     const label = root.querySelector('.br-label');
     const num = root.querySelector('.br-num');
     const select = root.querySelector('[data-pattern]');
     const toggle = root.querySelector('[data-toggle]');
     const cyclesEl = root.querySelector('[data-cycles]');
     let timer = null, cycles = 0;
+    let pos = { x: 0, y: 0 };   // dot position: x 0 = left, 1 = right; y 0 = bottom, 1 = top
+
+    function moveDot(secs) {
+      dot.style.transitionDuration = secs + 's';
+      dot.style.setProperty('--x', pos.x);
+      dot.style.setProperty('--y', pos.y);
+    }
 
     function runStep(steps, i) {
       const [text, secs, kind] = steps[i];
@@ -291,6 +65,11 @@
         circle.style.transitionDuration = secs + 's';
         circle.classList.toggle('is-full', kind === 'in');
       }
+      // The dot: up for in, down for out, across for a hold
+      if (kind === 'in') pos.y = 1;
+      else if (kind === 'out') pos.y = 0;
+      else pos.x = 1 - pos.x;
+      moveDot(secs);
       timer = setInterval(() => {
         if (--left > 0) return void (num.textContent = left);
         clearInterval(timer);
@@ -305,6 +84,8 @@
       timer = null;
       circle.style.transitionDuration = '0.8s';
       circle.classList.remove('is-full');
+      pos = { x: 0, y: 0 };
+      moveDot(0.8);
       label.textContent = 'Ready';
       num.textContent = '';
       toggle.textContent = 'Start';
@@ -333,12 +114,14 @@
       <p class="play-title">Sketchpad</p>
       <p class="play-hint">Draw something with a mouse, finger, or stylus (pen pressure works too). Save it if it turns out well.</p>
       <div class="sk-tools">
-        <div class="sk-group" data-colors>
-          ${colors.map(([n, c], i) => `<button type="button" class="sk-swatch" style="--c:${c}" aria-label="${n}" aria-pressed="${i === 0}" data-color="${c}"></button>`).join('')}
-          <button type="button" class="btn btn-quiet sk-eraser" aria-pressed="false" data-color="${PAPER}">Eraser</button>
+        <div class="sk-group">
+          <span class="sk-label">Color</span>
+          ${colors.map(([n, c], i) => `<button type="button" class="sk-swatch" style="--c:${c}" title="${n}" aria-label="${n}" aria-pressed="${i === 0}" data-color="${c}"></button>`).join('')}
+          <button type="button" class="sk-chip sk-eraser" aria-pressed="false" data-color="${PAPER}">Eraser</button>
         </div>
-        <div class="sk-group" data-sizes>
-          ${sizes.map(([n, s], i) => `<button type="button" class="sk-size" style="--s:${Math.max(4, s * 0.8)}px" aria-label="${n} brush" aria-pressed="${i === 1}" data-size="${s}"></button>`).join('')}
+        <div class="sk-group">
+          <span class="sk-label">Size</span>
+          ${sizes.map(([n, s], i) => `<button type="button" class="sk-chip" aria-pressed="${i === 1}" data-size="${s}"><span class="sk-dot" style="--s:${Math.max(3, Math.round(s * 0.65))}px"></span>${n}</button>`).join('')}
         </div>
         <div class="sk-group sk-actions">
           <button type="button" class="btn btn-quiet" data-undo>Undo</button>
@@ -346,7 +129,7 @@
           <button type="button" class="btn" data-save>Save</button>
         </div>
       </div>
-      <canvas class="sk-canvas" width="1200" height="750" aria-label="Drawing canvas"></canvas>`;
+      <canvas class="sk-canvas" width="1200" height="540" aria-label="Drawing canvas"></canvas>`;
 
     const canvas = root.querySelector('canvas');
     const ctx = canvas.getContext('2d');
@@ -354,6 +137,8 @@
     let color = colors[0][1], size = sizes[1][1];
     let drawing = false, last = null, lastMid = null;
 
+    // Size buttons preview the brush in the current color
+    root.style.setProperty('--pen', color);
     ctx.lineCap = ctx.lineJoin = 'round';
     ctx.fillStyle = PAPER;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -364,6 +149,8 @@
     root.querySelectorAll('[data-color]').forEach((b) => b.addEventListener('click', () => {
       color = b.dataset.color;
       pick('[data-color]', b);
+      root.style.setProperty('--pen', color);
+      root.classList.toggle('is-erasing', color === PAPER);
     }));
     root.querySelectorAll('[data-size]').forEach((b) => b.addEventListener('click', () => {
       size = Number(b.dataset.size);
@@ -434,7 +221,7 @@
   }
 
   /* ---------- Mount ---------- */
-  const widgets = { penalty, 'eight-count': eightCount, breathe, sketch };
+  const widgets = { breathe, sketch };
 
   document.querySelectorAll('[data-play]').forEach((root) => {
     const init = widgets[root.dataset.play];
