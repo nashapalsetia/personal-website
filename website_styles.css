@@ -359,6 +359,7 @@ figure figcaption {
 .play select:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 
 /* Penalty kick */
+/* Hidden for now: remove this line and the matching closing line to bring it back.
 .pk-field {
   position: relative;
   aspect-ratio: 16 / 10;
@@ -431,6 +432,7 @@ figure figcaption {
 }
 .pk-msg.is-goal { color: var(--gold-deep); }
 .pk-msg.is-miss { color: var(--ink-soft); }
+end hidden penalty game */
 
 /* Breathing pacer */
 .br-stage {
@@ -453,7 +455,8 @@ figure figcaption {
 .br-label { display: block; font-family: 'Playfair Display', serif; font-size: 1.25rem; color: var(--ink); }
 .br-num { display: block; font-size: 0.9rem; color: var(--muted); min-height: 1.4em; }
 
-/* Sketchpad */
+/* Sketchpad (size dots are drawn at the real brush size, in the current pen color) */
+/* Hidden for now: remove this line and the matching closing line to bring it back.
 .sk-tools {
   display: flex;
   flex-wrap: wrap;
@@ -503,7 +506,6 @@ figure figcaption {
 .sk-chip[aria-pressed="true"] { color: var(--ink); border-color: var(--ink); box-shadow: 0 0 0 1px var(--ink); }
 .sk-size { width: 28px; padding: 0; justify-content: center; }
 
-/* Dot drawn at the real brush size, in the current pen color */
 .sk-dot {
   width: var(--s); height: var(--s);
   border-radius: 50%;
@@ -521,13 +523,15 @@ figure figcaption {
   touch-action: none;
 }
 
+end hidden sketchpad */
+
 @media (max-width: 600px) {
   .play { padding: 18px 14px; }
-  .sk-actions { margin-left: 0; }
+  /* .sk-actions { margin-left: 0; } */
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .pk-keeper, .pk-ball { transition-duration: .15s; }
+  /* .pk-keeper, .pk-ball { transition-duration: .15s; } */
 }
 
 /* ---------- Footer ---------- */
