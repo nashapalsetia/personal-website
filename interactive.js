@@ -134,7 +134,7 @@
 
     root.innerHTML = `
       <p class="play-title">Take a breather</p>
-      <p class="play-hint">Follow the circle for a minute. Slow breathing like this is a simple way to calm your heart rate before a game, a performance, or an exam.</p>
+      <p class="play-hint">Follow the circle for a minute.</p>
       <div class="br-stage">
         <div class="br-circle"></div>
         <div class="br-text" aria-live="polite">
