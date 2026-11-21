@@ -7,9 +7,10 @@
 (function () {
   'use strict';
 
-  const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+  // const wait = (ms) => new Promise((r) => setTimeout(r, ms));   // only used by the penalty game
 
   /* ---------- Soccer: penalty kick ---------- */
+  /* Hidden for now: remove this line and the matching closing line to bring it back.
   function penalty(root) {
     const zoneNames = [
       ['Top left', 'Top centre', 'Top right'],
@@ -124,6 +125,8 @@
     });
   }
 
+  ---------- end hidden penalty game ---------- */
+
   /* ---------- Health: breathing pacer ---------- */
   function breathe(root) {
     const patterns = {
@@ -199,6 +202,7 @@
   }
 
   /* ---------- Sketching: sketchpad ---------- */
+  /* Hidden for now: remove this line and the matching closing line to bring it back.
   function sketch(root) {
     const PAPER = '#fffdf8';
     const colors = [
@@ -317,8 +321,10 @@
     });
   }
 
+  ---------- end hidden sketchpad ---------- */
+
   /* ---------- Mount ---------- */
-  const widgets = { penalty, breathe, sketch };
+  const widgets = { /* penalty, */ breathe /* , sketch */ };
 
   document.querySelectorAll('[data-play]').forEach((root) => {
     const init = widgets[root.dataset.play];
